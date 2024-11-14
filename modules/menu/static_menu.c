@@ -1102,6 +1102,34 @@ static int cmd_set_adelay(struct re_printf *pf, void *arg)
 
 
 /**
+ * Send DTMF Digit on outgoing call
+ *
+ * @param pf     Print handler for debug output
+ * @param arg    Optional command argument
+ *               The DTMF digit to send.
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+static int cmd_send_dtmf(struct re_printf *pf, void *arg)
+{
+    const struct cmd_arg *carg = arg;
+    struct ua *ua = carg->data ? carg->data : menu_uacur();
+    struct call *call;
+    int err;
+
+    call = ua_call(ua);
+    if ((call) && (call_state(call) == CALL_STATE_ESTABLISHED)) {
+        err  = call_send_digit(call, *carg->prm);
+    }
+    else {
+        err  = re_hprintf(pf, "\n(no active calls)\n");
+    }
+
+    return err;
+}
+
+
+/**
  * Set SIP auto answer Call-Info/Alert-Info value for outgoing calls
  *
  * @param pf     Print handler for debug output
@@ -1496,6 +1524,7 @@ static const struct cmd cmdv[] = {
 {"help",      'h',        0, "Help menu",               print_commands       },
 {"listcalls", 'l',        0, "List active calls",       cmd_print_calls      },
 {"options",   'o',  CMD_PRM, "Options",                 options_command      },
+{"senddtmf",  0,    CMD_PRM, "Send DTMF Digit",         cmd_send_dtmf        },
 {"refer",     'R',  CMD_PRM, "Send REFER outside dialog", cmd_refer          },
 {"reginfo",   'r',        0, "Registration info",       ua_print_reg_status  },
 {"setadelay", 0,    CMD_PRM, "Set answer delay for outgoing call",
